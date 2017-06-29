@@ -1,0 +1,16 @@
+{
+  "name": "test-player",
+  "version": "0.0.1",
+  "author": "Robert Fairley <robert.fairley@rci.rogers.com>",
+  "dependencies": {
+    "@types/hls.js": "^0.7.2",
+    "hls.js": "^0.7.10",
+    "rollup": "^0.43.0",
+    "rollup-watch": "^4.0.0"
+  },
+  "scripts": {
+    "start": "php -S localhost:3088",
+    "build": "rollup -c rollup.config.js",
+    "build:watch": "rollup -c rollup.config.js --watch"
+  }
+}
