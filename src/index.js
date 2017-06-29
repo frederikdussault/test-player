@@ -24,10 +24,6 @@ class Main {
   }
 
   adjustVolume(_direction) {
-    this.player       = document.querySelector('#player'),
-    this.volumeSlider = document.querySelector('#volume'),
-    this.volumeVl     = document.querySelector('#volume-value')
-
     if (_direction === 'up') {
       this.volumeSlider.stepUp()
     } else if (_direction === 'down'){
