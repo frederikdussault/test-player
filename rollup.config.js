@@ -1,6 +1,6 @@
 export default {
   entry: './src/index.js',
   dest: 'app.js',
-  format: 'iife'
+  format: 'iife',
+  useStrict: false
 }
-

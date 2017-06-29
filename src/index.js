@@ -20,7 +20,7 @@ class Main {
     this.stats        = document.querySelector('#player-status')
     this.users        = document.querySelector('#user-status')
     this.status       = document.querySelector('#status')
-
+    this.posi         = document.querySelector('#position')
   }
 
   adjustVolume(_direction) {
@@ -88,7 +88,7 @@ class Main {
 
         // Fire when metadata changes
         hls.on(Hls.Events.FRAG_PARSING_METADATA, (event, data) => {
-          let meta = JSON.stringify(data.frag, null, 2)
+          let meta = JSON.stringify(data, null, 2)
           this.stats.innerHTML = "PLAYER METADATA\n===============\n\n" + meta
           console.log('metadata changed')
           console.log(data)
@@ -97,12 +97,27 @@ class Main {
         // Fire when userdata changes
         hls.on(Hls.Events.FRAG_PARSING_DATA, (event, data) => {
 
+
+
           this.users.innerHTML = "USER DATA\n=================\n\nstartPTS: " + data.startPTS + "\nendPTS: " + data.endPTS
           console.log('data changed')
           console.log(data)
         })
 
+/*
+        hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
+          let posData = JSON.stringify(data, null, 2)
+          this.posi.innerHTML = "POSITION DATA\n================\n\n" + posData
+
+        })
+*/
+
+        hls.on(Hls.Events.STREAM_STATE_TRANSITION, (event, data) => {
+          let bufData = JSON.stringify(data, null, 2)
+          this.posi.innerHTML = "STREAM STATE\n==================\n\n" + bufData
+        })
       })
+
     } else {
       this.status.innerHTML = 'Sorry, HLS streaming is not supported in your browser.'
     }
@@ -112,8 +127,10 @@ class Main {
 function changeStream(_url, _stream) {
   let __main__ = new Main(_url)
   let strm = document.querySelector('#stream')
+  let stat = document.querySelector('#status')
 
   strm.innerHTML = _stream
+  stat.innerHTML = 'STOPPED'
   __main__.init()
 }
 
@@ -124,6 +141,10 @@ window.onload = (event) => {
   let ckfx = document.querySelector('#ckfx')
   let chur = document.querySelector('#chur')
 
+  // get dialog close button
+  let cls = document.querySelector('#close')
+  let help = document.querySelector('#help')
+
   // Run default stream CKAT
   changeStream('https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master.m3u8', 'CKAT')
 
@@ -132,4 +153,6 @@ window.onload = (event) => {
   ckfx.onclick = () => changeStream('https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master.m3u8', 'CKFX')
   chur.onclick = () => changeStream('https://radioamd-i.akamaihd.net/hls/live/496507/chur/48k/master.m3u8', 'CHUR')
 
+  cls.onclick = () => document.querySelector('#popup').style.display = 'none'
+  help.onclick = () => document.querySelector('#popup').style.display = 'block'
 }
