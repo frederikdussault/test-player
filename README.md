@@ -5,7 +5,8 @@ Contains 3 streams for CKAT, CKFX, CHUR
 
 ### Instructions
 Written in ES6, transpiled with Rollup for the browser.
-Uses Yarn as a build too, but you can use NPM if you prefer.
+Uses Yarn as a build tool, but you can use NPM if you prefer.
+(Note: rollup is packaged locally, but you may have to install it globally.)
 
 
 To build, run
@@ -21,7 +22,7 @@ yarn build:watch
 ### Quick Breakdown
 I'll keep it brief since it's pretty simple and I doubt it will see much reuse.
 
-There is a global Hls object declared at the start of the script. This is necessary to access the Hls.js script linked in the HTML file.
+There is a global `Hls` object declared at the start of the script. This is necessary to access the Hls.js script linked in the HTML file.
 
 There is a `Main` class containing a few methods. This is where Hls.js is initialized, and the player is controlled.
 It takes one parameter when it's initialized -- the stream url. The stream url *must* be an HLS mpeg stream (`.m3u8`)
