@@ -161,6 +161,10 @@ window.onload = (event) => {
   let ckat = document.querySelector('#ckat')
   let ckfx = document.querySelector('#ckfx')
   let chur = document.querySelector('#chur')
+  let cust = document.querySelector('#cust')
+ 
+  // get custom stream url from input
+  let strm = document.querySelector('#custom-stream')
 
   // get dialog close button
   let cls  = document.querySelector('#close')
@@ -191,6 +195,11 @@ window.onload = (event) => {
 		  'https://radioamd-i.akamaihd.ne}t/hls/live/496507/chur/48k/master.m3u8', 
 		  'https://radioamd-i.akamaihd.ne}t/hls/live/496507/chur/48k/master-299.aac', 
 		  'CHUR'
+		  )
+  cust.onclick = () => changeStream(
+		  strm.value,
+		  strm.value,
+		  'CUSTOM STREAM'
 		  )
 
   cls.onclick = () => document.querySelector('#popup').style.display = 'none'
