@@ -6,6 +6,7 @@ Contains 3 streams for CKAT, CKFX, CHUR
 ### Instructions
 Written in ES6, transpiled with Rollup for the browser.
 Uses Yarn as a build tool, but you can use NPM if you prefer.
+(Note: rollup is packaged locally, but you may have to install it globally.)
 
 
 To build, run
