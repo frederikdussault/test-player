@@ -23,7 +23,7 @@ class Main {
     this.status       = document.querySelector('#status')
     this.posi         = document.querySelector('#position')
     this.id3output    = document.querySelector('#id3output')
-  }
+  } // constructor
 
   adjustVolume(_direction) {
     if (_direction === 'up') {
@@ -56,10 +56,10 @@ class Main {
   init() {
     // Check if HLS is supported in the browser, or fail
     if (Hls.isSupported()) {
-        let hls = new Hls()
-        hls.loadSource(this.source)
-        hls.attachMedia(this.player)
-        hls.on(Hls.Events.MANIFEST_PARSED, (data) => {
+      let hls = new Hls()
+      hls.loadSource(this.source)
+      hls.attachMedia(this.player)
+      hls.on(Hls.Events.MANIFEST_PARSED, (data) => {
 
         // Timer init for click/hold
         let intervalId   = 0
@@ -100,6 +100,7 @@ class Main {
         this.volumeUp.onmouseup = () => {
           clearInterval(intervalId)
         }
+
         this.volumeDn.onmouseup = () => {
           clearInterval(intervalId)
         }
@@ -113,7 +114,7 @@ class Main {
           this.stats.innerHTML = "PLAYER METADATA\n===============\n\n" + meta
           console.log('metadata changed')
           console.log(data)
-        })
+        }) // hls.on Hls.Events.FRAG_PARSING_METADATA
 
         // Fire when userdata changes
         hls.on(Hls.Events.FRAG_PARSING_DATA, (event, data) => {
@@ -123,27 +124,29 @@ class Main {
           this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2)
           console.log('data changed')
           console.log(data)
-        })
+        }) // hls.on Hls.Events.FRAG_PARSING_DATA
 
 /*
         hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
           let posData = JSON.stringify(data, null, 2)
           this.posi.innerHTML = "POSITION DATA\n================\n\n" + posData
 
-        })
+        }) // hls.on Hls.Events.FRAG_CHANGED
 */
 
         hls.on(Hls.Events.STREAM_STATE_TRANSITION, (event, data) => {
           let bufData = JSON.stringify(data, null, 2)
           this.posi.innerHTML = "STREAM STATE\n==================\n\n" + bufData
-        })
-      })
+        }) // hls.on Hls.Events.STREAM_STATE_TRANSITION
+
+      })  // hls.on Hls.Events.MANIFEST_PARSED
 
     } else {
       this.status.innerHTML = 'Sorry, HLS streaming is not supported in your browser.'
-    }
-  }
-}
+    } // if Hls.isSupported
+
+  }  // init
+} // class Main
 
 function changeStream(data) {
   let __main__ = new Main(data._url, data._aac)
