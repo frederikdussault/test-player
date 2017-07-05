@@ -38,15 +38,15 @@ class Main {
   }
 
   readId3Tags() {
-    id3( 
+    id3(
       this.aac,
       (error, tags) => {
-        
+
         if (error) {
-	  this.id3output.innerHTML = 'Could not generate id3 tags'
-	  console.log(error)
-	} else {
-	  console.log(tags)
+          this.id3output.innerHTML = 'Could not generate id3 tags'
+          console.log(error)
+        } else {
+          console.log(tags)
           this.id3output.innerHTML = JSON.stringify(tags, null, 2)
         }
       }
@@ -108,7 +108,7 @@ class Main {
         hls.on(Hls.Events.FRAG_PARSING_METADATA, (event, data) => {
           let meta = JSON.stringify(data, null, 2)
 
-	  this.readId3Tags()
+          this.readId3Tags()
 
           this.stats.innerHTML = "PLAYER METADATA\n===============\n\n" + meta
           console.log('metadata changed')
@@ -118,9 +118,9 @@ class Main {
         // Fire when userdata changes
         hls.on(Hls.Events.FRAG_PARSING_DATA, (event, data) => {
 
-         this.readId3Tags()
+          this.readId3Tags()
 
-          this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2) 
+          this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2)
           console.log('data changed')
           console.log(data)
         })
@@ -145,12 +145,12 @@ class Main {
   }
 }
 
-function changeStream(_url, _aac, _stream) {
-  let __main__ = new Main(_url, _aac)
+function changeStream(data) {
+  let __main__ = new Main(data._url, data._aac)
   let strm = document.querySelector('#stream')
   let stat = document.querySelector('#status')
 
-  strm.innerHTML = _stream
+  strm.innerHTML = data._stream
   stat.innerHTML = 'STOPPED'
   __main__.init()
 }
@@ -162,6 +162,23 @@ window.onload = (event) => {
   let ckfx = document.querySelector('#ckfx')
   let chur = document.querySelector('#chur')
 
+  // Define stream data
+  ckat.data = {
+      '_url': 'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master.m3u8',
+		  '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master-131.aac',
+		  '_stream': 'CKAT'
+      }
+  ckfx.data = {
+      '_url': 'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master.m3u8',
+		  '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master-301.aac',
+		  '_stream': 'CKFX'
+      }
+  chur.data = {
+		  '_url': 'https://radioamd-i.akamaihd.net/hls/live/496507/chur/48k/master.m3u8',
+		  '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496507/chur/48k/master-299.aac',
+		  '_stream': 'CHUR'
+      }
+
   // get dialog close button
   let cls  = document.querySelector('#close')
   let help = document.querySelector('#help')
@@ -170,28 +187,12 @@ window.onload = (event) => {
   let goTop = document.querySelector('#top-button')
 
   // Run default stream CKAT
-  changeStream(
-		  'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master.m3u8',
-		  'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master-131.aac',
-		  'CKAT'
-		  )
+  changeStream( ckat.data )
 
   // Change stream on choice
-  ckat.onclick = () => changeStream(
-		  'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master.m3u8', 
-		  'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master-131.aac',
-		  'CKAT'
-		  )
-  ckfx.onclick = () => changeStream(
-		  'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master.m3u8',
-		  'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master-301.aac', 
-		  'CKFX'
-		  )
-  chur.onclick = () => changeStream(
-		  'https://radioamd-i.akamaihd.ne}t/hls/live/496507/chur/48k/master.m3u8', 
-		  'https://radioamd-i.akamaihd.ne}t/hls/live/496507/chur/48k/master-299.aac', 
-		  'CHUR'
-		  )
+  ckat.onclick = () => changeStream( ckat.data )
+  ckfx.onclick = () => changeStream( ckfx.data )
+  chur.onclick = () => changeStream( chur.data )
 
   cls.onclick = () => document.querySelector('#popup').style.display = 'none'
   help.onclick = () => document.querySelector('#popup').style.display = 'block'
