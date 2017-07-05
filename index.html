@@ -31,6 +31,25 @@
       #help {
         float: right;
       }
+      #top-button {
+	cursor: pointer;
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        padding: 1em;
+        border: 1px solid rgba(0,0,0,0.2);
+        box-shadow: 5px 5px 0 0 rgba(0,0,0,0.3);
+        background-color: white;
+      }
+      #top-button:hover {
+        background-color: #eee;
+      }
+      #top-button:active {
+        background-color: #ddd;
+        box-shadow: none;
+        bottom: 5px;
+        right: 5px;
+      }
     </style>
   </head>
 
@@ -48,7 +67,7 @@
     id: demuxer id,
     frag : fragment object,
     samples : [
-      d3 pes - pts and dts timestamps
+      id3 pes - pts and dts timestamps
       are relative, values are in seconds
     ]
   }
@@ -82,12 +101,18 @@
 
       <a href="#" id="help">Help</a>
   </fieldset>
+
+    <pre id="id3output">NO ID3 METADATA</pre>
+    <br/>
     <pre id="player-status">NO METADATA</pre>
     <br/>
     <pre id="user-status">NO USERDATA</pre>
     <br/>
     <pre id="position">NO POSITION DATA</pre>
     <video id="player"></video>
+    <div id="top-button">&#8679;</div>
+
+    <script src="node_modules/id3js/id3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/0.7.10/hls.min.js"></script>
     <script src="app.js"></script>
   </body>
