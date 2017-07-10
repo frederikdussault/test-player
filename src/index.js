@@ -1,6 +1,69 @@
 import Hls from 'hls.js'
 import id3 from 'id3js'
 
+/*
+ * Modifications:
+ *   Date: 2017 07 10
+ *   Author: Frederik Dussault
+ *   Changelog: 
+ *     Created a streamList object to enable dynamicaly generated stream buttons
+ * */
+
+class StreamList {
+  constructor( domWraper, changeStreamCallback ) {
+    /*
+      domWraper:            DOM element where to insert the radio butons
+      changeStreamCallback: function to process stream
+    */
+
+    this.streamInfo = [
+      {
+        '_url': 'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master.m3u8',
+        '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master-131.aac',
+        '_stream': 'CKAT',
+        'id': 'ckat',
+        'domSelector': '#ckat'
+      },
+      {
+        '_url': 'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master.m3u8',
+        '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master-301.aac',
+        '_stream': 'CKFX',
+        'id': 'ckfx',
+        'domSelector': '#ckfx'
+      },
+      {
+        '_url': 'https://radioamd-i.akamaihd.net/hls/live/496507/chur/48k/master.m3u8',
+        '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496507/chur/48k/master-299.aac',
+        '_stream': 'CHUR',
+        'id': 'chur',
+        'domSelector': '#chur'
+      }
+    ]
+
+    this.createButtons( domWraper, changeStreamCallback)
+
+  } // constructor
+
+  createButtons( domWraper, changeStreamCallback ) {
+    // add Stream Buttons
+    this.streamInfo.forEach( (streamData) => {
+      console.log( 'addStreamButton: ', streamData )
+
+      //    create button dom element
+      let button = document.createElement('button')
+      button.id = streamData.id
+      button.textContent = streamData._stream
+
+      //    add to DOM wraper
+      domWraper.appendChild(button)
+
+      //    add on click event
+      button.onclick = () => changeStreamCallback( streamData )
+    })
+
+  } // createButtons
+} // class StreamList
+
 class Main {
   constructor(source, aac) {
     // Stream url piped through object
@@ -159,28 +222,8 @@ function changeStream(data) {
 }
 
 window.onload = (event) => {
-
-  // Get global buttons
-  let ckat = document.querySelector('#ckat')
-  let ckfx = document.querySelector('#ckfx')
-  let chur = document.querySelector('#chur')
-
-  // Define stream data
-  ckat.data = {
-      '_url': 'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master.m3u8',
-		  '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master-131.aac',
-		  '_stream': 'CKAT'
-      }
-  ckfx.data = {
-      '_url': 'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master.m3u8',
-		  '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master-301.aac',
-		  '_stream': 'CKFX'
-      }
-  chur.data = {
-		  '_url': 'https://radioamd-i.akamaihd.net/hls/live/496507/chur/48k/master.m3u8',
-		  '_aac': 'https://radioamd-i.akamaihd.net/hls/live/496507/chur/48k/master-299.aac',
-		  '_stream': 'CHUR'
-      }
+  let streamSelectDomWraper = document.querySelector('#select-stream-wrap')
+  let streams = new StreamList( streamSelectDomWraper, changeStream )
 
   // get dialog close button
   let cls  = document.querySelector('#close')
@@ -189,15 +232,18 @@ window.onload = (event) => {
   // get top button
   let goTop = document.querySelector('#top-button')
 
-  // Run default stream CKAT
-  changeStream( ckat.data )
-
-  // Change stream on choice
-  ckat.onclick = () => changeStream( ckat.data )
-  ckfx.onclick = () => changeStream( ckfx.data )
-  chur.onclick = () => changeStream( chur.data )
-
   cls.onclick = () => document.querySelector('#popup').style.display = 'none'
   help.onclick = () => document.querySelector('#popup').style.display = 'block'
   goTop.onclick = () => window.scrollTo(0, 0)
-}
+
+/*
+  // Get global buttons
+  let ckat = document.querySelector('#ckat')
+  let ckfx = document.querySelector('#ckfx')
+  let chur = document.querySelector('#chur')
+*/
+
+  // Populate the form with first stream
+  changeStream( streams.streamInfo[0] )
+
+} // window.onload
