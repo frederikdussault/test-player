@@ -2,10 +2,9 @@ import Hls from 'hls.js'
 import id3 from 'id3js'
 
 class Main {
-  constructor(source, aac) {
+  constructor(source) {
     // Stream url piped through object
     this.source = source
-    this.aac    = aac
 
     // Get player element from the DOM
     this.player       = document.querySelector('#player')
@@ -39,7 +38,7 @@ class Main {
 
   readId3Tags() {
     id3( 
-      this.aac,
+      this.source,
       (error, tags) => {
         
         if (error) {
@@ -111,27 +110,18 @@ class Main {
 	  this.readId3Tags()
 
           this.stats.innerHTML = "PLAYER METADATA\n===============\n\n" + meta
-          console.log('metadata changed')
-          console.log(data)
+          //console.log('metadata changed')
+          //console.log(data)
         })
 
         // Fire when userdata changes
         hls.on(Hls.Events.FRAG_PARSING_DATA, (event, data) => {
 
-         this.readId3Tags()
-
-          this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2) 
-          console.log('data changed')
-          console.log(data)
+	  this.users.innerHTML = "USER DATA\n==================\n\n" + data.startPTS
+          //this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2) 
+          //console.log('data changed')
+          //console.log(data)
         })
-
-/*
-        hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
-          let posData = JSON.stringify(data, null, 2)
-          this.posi.innerHTML = "POSITION DATA\n================\n\n" + posData
-
-        })
-*/
 
         hls.on(Hls.Events.STREAM_STATE_TRANSITION, (event, data) => {
           let bufData = JSON.stringify(data, null, 2)
@@ -145,8 +135,8 @@ class Main {
   }
 }
 
-function changeStream(_url, _aac, _stream) {
-  let __main__ = new Main(_url, _aac)
+function changeStream(_url, _stream) {
+  let __main__ = new Main(_url)
   let strm = document.querySelector('#stream')
   let stat = document.querySelector('#status')
 
@@ -176,28 +166,23 @@ window.onload = (event) => {
   // Run default stream CKAT
   changeStream(
 		  'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master.m3u8',
-		  'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master-131.aac',
 		  'CKAT'
 		  )
 
   // Change stream on choice
   ckat.onclick = () => changeStream(
 		  'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master.m3u8', 
-		  'https://radioamd-i.akamaihd.net/hls/live/496504/ckat/48k/master-131.aac',
 		  'CKAT'
 		  )
   ckfx.onclick = () => changeStream(
 		  'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master.m3u8',
-		  'https://radioamd-i.akamaihd.net/hls/live/496508/ckfx/48k/master-301.aac', 
 		  'CKFX'
 		  )
   chur.onclick = () => changeStream(
-		  'https://radioamd-i.akamaihd.ne}t/hls/live/496507/chur/48k/master.m3u8', 
-		  'https://radioamd-i.akamaihd.ne}t/hls/live/496507/chur/48k/master-299.aac', 
+		  'https://radioamd-i.akamaihd.net/hls/live/496507/chur/48k/master.m3u8', 
 		  'CHUR'
 		  )
   cust.onclick = () => changeStream(
-		  strm.value,
 		  strm.value,
 		  'CUSTOM STREAM'
 		  )
