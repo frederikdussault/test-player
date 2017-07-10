@@ -5,7 +5,7 @@ import id3 from 'id3js'
  * Modifications:
  *   Date: 2017 07 10
  *   Author: Frederik Dussault
- *   Changelog: 
+ *   Changelog:
  *     Created a streamList object to enable dynamicaly generated stream buttons
  * */
 
@@ -65,10 +65,9 @@ class StreamList {
 } // class StreamList
 
 class Main {
-  constructor(source, aac) {
+  constructor(source) {
     // Stream url piped through object
     this.source = source
-    this.aac    = aac
 
     // Get player element from the DOM
     this.player       = document.querySelector('#player')
@@ -102,14 +101,14 @@ class Main {
 
   readId3Tags() {
     id3(
-      this.aac,
+      this.source,
       (error, tags) => {
 
         if (error) {
-          this.id3output.innerHTML = 'Could not generate id3 tags'
-          console.log(error)
-        } else {
-          console.log(tags)
+	  this.id3output.innerHTML = 'Could not generate id3 tags'
+	  console.log(error)
+	} else {
+	  console.log(tags)
           this.id3output.innerHTML = JSON.stringify(tags, null, 2)
         }
       }
@@ -175,27 +174,17 @@ class Main {
           this.readId3Tags()
 
           this.stats.innerHTML = "PLAYER METADATA\n===============\n\n" + meta
-          console.log('metadata changed')
-          console.log(data)
+          //console.log('metadata changed')
+          //console.log(data)
         }) // hls.on Hls.Events.FRAG_PARSING_METADATA
 
         // Fire when userdata changes
         hls.on(Hls.Events.FRAG_PARSING_DATA, (event, data) => {
-
-          this.readId3Tags()
-
-          this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2)
-          console.log('data changed')
-          console.log(data)
-        }) // hls.on Hls.Events.FRAG_PARSING_DATA
-
-/*
-        hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
-          let posData = JSON.stringify(data, null, 2)
-          this.posi.innerHTML = "POSITION DATA\n================\n\n" + posData
-
-        }) // hls.on Hls.Events.FRAG_CHANGED
-*/
+          this.users.innerHTML = "USER DATA\n==================\n\n" + data.startPTS
+          //this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2)
+          //console.log('data changed')
+          //console.log(data)
+        })  // hls.on Hls.Events.FRAG_PARSING_DATA
 
         hls.on(Hls.Events.STREAM_STATE_TRANSITION, (event, data) => {
           let bufData = JSON.stringify(data, null, 2)
@@ -222,8 +211,18 @@ function changeStream(data) {
 }
 
 window.onload = (event) => {
-  let streamSelectDomWraper = document.querySelector('#select-stream-wrap')
-  let streams = new StreamList( streamSelectDomWraper, changeStream )
+  // Get global buttons
+/*
+  let ckat = document.querySelector('#ckat')
+  let ckfx = document.querySelector('#ckfx')
+  let chur = document.querySelector('#chur')
+*/
+  let buttonWrap = document.querySelector('#buttonWrap')
+  let cust = document.querySelector('#cust')
+  let streams = new StreamList( buttonWrap, changeStream )
+
+  // get custom stream url from input
+  let strm = document.querySelector('#custom-stream')
 
   // get dialog close button
   let cls  = document.querySelector('#close')
@@ -235,13 +234,6 @@ window.onload = (event) => {
   cls.onclick = () => document.querySelector('#popup').style.display = 'none'
   help.onclick = () => document.querySelector('#popup').style.display = 'block'
   goTop.onclick = () => window.scrollTo(0, 0)
-
-/*
-  // Get global buttons
-  let ckat = document.querySelector('#ckat')
-  let ckfx = document.querySelector('#ckfx')
-  let chur = document.querySelector('#chur')
-*/
 
   // Populate the form with first stream
   changeStream( streams.streamInfo[0] )
