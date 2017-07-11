@@ -1,11 +1,23 @@
 import Hls from 'hls.js'
-import id3 from 'id3js'
+//import ID3 from 'id3-parser'
 
 class Main {
   constructor(source, aac) {
     // Stream url piped through object
     this.source = source
     this.aac    = aac
+
+    // ID3 Tag Globals
+    this.id3 = {
+      title: '[none]',
+      artist: '[none]',
+      station: '[none]',
+      audioType: '[none]',
+      encoder: '[none]',
+      sampleRate: '[none]',
+      creationDate: '[none]',
+      data: '[none]'
+    }
 
     // Get player element from the DOM
     this.player       = document.querySelector('#player')
@@ -37,23 +49,92 @@ class Main {
     this.volumeVl.innerHTML = (this.volumeSlider.value * 100).toFixed(0)
   }
 
-  readId3Tags() {
-    id3( 
-      this.aac,
-      (error, tags) => {
-        
-        if (error) {
-	  this.id3output.innerHTML = 'Could not generate id3 tags'
-	  console.log(error)
-	} else {
-	  console.log(tags)
-          this.id3output.innerHTML = JSON.stringify(tags, null, 2)
-        }
-      }
-    )
+  getAllIndexes(array, value) {
+    let indexes = [], 
+	i = -1
+
+    while((i = array.indexOf(value, i+1)) != -1) {
+      indexes.push(i)
+    }
+
+    return indexes
+  }
+
+  extractMetadata(data) {
+    let station, title, artist, audioType, encoder, sampleRate, creationDate, startLoc, endLoc
+
+    // Get the title
+    startLoc = data.indexOf("TIT2") + 4
+    endLoc   = data.indexOf("TPE1")
+    title    = data.substring(startLoc, endLoc)
+
+    // Get the artist
+    startLoc = data.indexOf("TPE1") + 4
+    endLoc   = data.indexOf("TFLT")
+    artist   = data.substring(startLoc, endLoc)
+
+    // Get the station
+    startLoc = data.indexOf('TRSN') + 4
+    endLoc   = data.indexOf('TIT2')
+    station  = data.substring(startLoc, endLoc).replace('!', '')
+
+    // Get all User defined data fields
+    let userFields = this.getAllIndexes(data, 'TXXX')
+
+    // Get the audio object type
+    startLoc = data.indexOf('TFLT') + 4
+    endLoc   = data.indexOf('TXXX')
+    audioType = data.substring(startLoc, endLoc).replace(/\t/, '')
+
+    // Get the encoder
+    startLoc = userFields[1] + 4
+    endLoc   = userFields[2]
+    encoder  = data.substring(startLoc, endLoc).replace('enc', '').replace(3, '')
+
+    // Get the sample rate
+    startLoc = userFields[5] + 4
+    endLoc   = userFields[6]
+    sampleRate = data.substring(startLoc, endLoc).replace('asr', '')
+
+    // Get the creation date
+    startLoc = userFields[7] + 8
+    endLoc   = data.indexOf('UTC') + 3
+    creationDate = data.substring(startLoc, endLoc).replace('crd', '')
+
+    console.log(data)
+
+    this.id3 = {
+      title,
+      artist,
+      station,
+      audioType,
+      encoder,
+      sampleRate,
+      creationDate,
+      data
+    }
+  }
+
+  processID3(data) {
+    let samples = data.samples
+    let encodedTag
+    let parsedTag = []
+
+    encodedTag = samples[0].data
+    
+    encodedTag.forEach((element) => {
+      parsedTag.push(String.fromCharCode(element))
+    })
+   
+    console.log(parsedTag)
+
+    let tagAsString = parsedTag.toString().replace(/,/g, '')
+
+    this.extractMetadata(tagAsString)
   }
 
   init() {
+
     // Check if HLS is supported in the browser, or fail
     if (Hls.isSupported()) {
         let hls = new Hls()
@@ -106,37 +187,22 @@ class Main {
 
         // Fire when metadata changes
         hls.on(Hls.Events.FRAG_PARSING_METADATA, (event, data) => {
-          let meta = JSON.stringify(data, null, 2)
 
-	  this.readId3Tags()
+          this.processID3(data)
+	
+          this.id3output.innerHTML = "ID3 TAGS\n=============\n\nTITLE: " + this.id3.title + "\nARTIST: " + this.id3.artist + "\nSTATION: " + this.id3.station + "\nENCODER: " + this.id3.encoder + "\nAUDIO TYPE: " + this.id3.audioType + "\nSAMPLE RATE: " + this.id3.sampleRate + "\nCREATION DATE: " + this.id3.creationDate + "\nFULL ID3 STRING:\n\n" + this.id3.data
 
-          this.stats.innerHTML = "PLAYER METADATA\n===============\n\n" + meta
-          console.log('metadata changed')
-          console.log(data)
         })
 
         // Fire when userdata changes
         hls.on(Hls.Events.FRAG_PARSING_DATA, (event, data) => {
 
-         this.readId3Tags()
-
-          this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2) 
-          console.log('data changed')
-          console.log(data)
+          //this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2) 
+          //console.log('data changed')
+          //console.log(data)
         })
 
-/*
-        hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
-          let posData = JSON.stringify(data, null, 2)
-          this.posi.innerHTML = "POSITION DATA\n================\n\n" + posData
-
-        })
-*/
-
-        hls.on(Hls.Events.STREAM_STATE_TRANSITION, (event, data) => {
-          let bufData = JSON.stringify(data, null, 2)
-          this.posi.innerHTML = "STREAM STATE\n==================\n\n" + bufData
-        })
+       
       })
 
     } else {
@@ -153,6 +219,7 @@ function changeStream(_url, _aac, _stream) {
   strm.innerHTML = _stream
   stat.innerHTML = 'STOPPED'
   __main__.init()
+
 }
 
 window.onload = (event) => {
