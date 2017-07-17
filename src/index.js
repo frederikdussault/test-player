@@ -12,6 +12,7 @@ class Main {
       title: '[none]',
       artist: '[none]',
       station: '[none]',
+      owner: '[none]',
       audioType: '[none]',
       encoder: '[none]',
       sampleRate: '[none]',
@@ -28,6 +29,7 @@ class Main {
     this.volumeSlider = document.querySelector('#volume')
     this.volumeUp     = document.querySelector('#volume-up')
     this.volumeDn     = document.querySelector('#volume-down')
+    this.volumeMt     = document.querySelector('#volume-mute')
     this.volumeRs     = document.querySelector('#volume-reset')
     this.volumeVl     = document.querySelector('#volume-value')
     this.stats        = document.querySelector('#player-status')
@@ -61,7 +63,7 @@ class Main {
   }
 
   extractMetadata(data) {
-    let station, title, artist, audioType, encoder, sampleRate, creationDate, startLoc, endLoc
+    let station, owner, title, artist, audioType, encoder, sampleRate, creationDate, startLoc, endLoc
 
     // Get the title
     startLoc = data.indexOf("TIT2") + 4
@@ -75,8 +77,13 @@ class Main {
 
     // Get the station
     startLoc = data.indexOf('TRSN') + 4
-    endLoc   = data.indexOf('TIT2')
+    endLoc   = data.indexOf('TRSO')
     station  = data.substring(startLoc, endLoc).replace('!', '')
+
+    // Get the station owner
+    startLoc = data.indexOf('TRSO') + 4
+    endLoc   = data.indexOf('TIT2')
+    owner    = data.substring(startLoc, endLoc)
 
     // Get all User defined data fields
     let userFields = this.getAllIndexes(data, 'TXXX')
@@ -107,6 +114,7 @@ class Main {
       title,
       artist,
       station,
+      owner,
       audioType,
       encoder,
       sampleRate,
@@ -178,6 +186,12 @@ class Main {
           this.player.volume = 0.5
         }
 
+        this.volumeMt.onclick = () => {
+	  this.volumeSlider.value = 0
+	  this.volumeVl.innerHTML = 0
+	  this.player.volume = 0
+	}
+
         this.volumeUp.onmouseup = () => {
           clearInterval(intervalId)
         }
@@ -190,7 +204,16 @@ class Main {
 
           this.processID3(data)
 	
-          this.id3output.innerHTML = "ID3 TAGS\n=============\n\nTITLE: " + this.id3.title + "\nARTIST: " + this.id3.artist + "\nSTATION: " + this.id3.station + "\nENCODER: " + this.id3.encoder + "\nAUDIO TYPE: " + this.id3.audioType + "\nSAMPLE RATE: " + this.id3.sampleRate + "\nCREATION DATE: " + this.id3.creationDate + "\nFULL ID3 STRING:\n\n" + this.id3.data
+          this.id3output.innerHTML = 
+		"ID3 TAGS\n=============\n\nTITLE: " + this.id3.title 
+		+ "\nARTIST: " + this.id3.artist 
+		+ "\nSTATION: " + this.id3.station 
+		+ "\nOWNER: " + this.id3.owner
+		+ "\nENCODER: " + this.id3.encoder 
+		+ "\nAUDIO TYPE: " + this.id3.audioType 
+		+ "\nSAMPLE RATE: " + this.id3.sampleRate 
+		+ "\nCREATION DATE: " + this.id3.creationDate 
+		+ "\nFULL ID3 STRING:\n\n" + this.id3.data
 
         })
 
