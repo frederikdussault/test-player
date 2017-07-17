@@ -380,9 +380,11 @@ http-signature@~1.1.0:
     jsprim "^1.2.2"
     sshpk "^1.7.0"
 
-id3js@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/id3js/-/id3js-1.1.3.tgz#6bb3442640a323606a7dbeea20f7cb935ea17066"
+id3-parser@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/id3-parser/-/id3-parser-1.2.0.tgz#89b70d8a2b8e1e1ac9b5041dcfc8d3b82a0a93b8"
+  dependencies:
+    promise-a-plus "^0.6.0"
 
 inflight@^1.0.4:
   version "1.0.6"
@@ -676,6 +678,10 @@ preserve@^0.2.0:
 process-nextick-args@~1.0.6:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-1.0.7.tgz#150e20b756590ad3f91093f25a4f2ad8bff30ba3"
+
+promise-a-plus@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/promise-a-plus/-/promise-a-plus-0.6.0.tgz#3da4fd047fc162d7b256376bc697b3fa9eadc7ac"
 
 punycode@^1.4.1:
   version "1.4.1"

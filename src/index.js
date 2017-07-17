@@ -1,5 +1,5 @@
 import Hls from 'hls.js'
-import id3 from 'id3js'
+//import ID3 from 'id3-parser'
 
 /*
  * Modifications:
@@ -69,6 +69,19 @@ class Main {
     // Stream url piped through object
     this.source = source
 
+    // ID3 Tag Globals
+    this.id3 = {
+      title: '[none]',
+      artist: '[none]',
+      station: '[none]',
+      owner: '[none]',
+      audioType: '[none]',
+      encoder: '[none]',
+      sampleRate: '[none]',
+      creationDate: '[none]',
+      data: '[none]'
+    }
+
     // Get player element from the DOM
     this.player       = document.querySelector('#player')
 
@@ -78,6 +91,7 @@ class Main {
     this.volumeSlider = document.querySelector('#volume')
     this.volumeUp     = document.querySelector('#volume-up')
     this.volumeDn     = document.querySelector('#volume-down')
+    this.volumeMt     = document.querySelector('#volume-mute')
     this.volumeRs     = document.querySelector('#volume-reset')
     this.volumeVl     = document.querySelector('#volume-value')
     this.stats        = document.querySelector('#player-status')
@@ -99,23 +113,98 @@ class Main {
     this.volumeVl.innerHTML = (this.volumeSlider.value * 100).toFixed(0)
   }
 
-  readId3Tags() {
-    id3(
-      this.source,
-      (error, tags) => {
+  getAllIndexes(array, value) {
+    let indexes = [], 
+	i = -1
 
-        if (error) {
-	  this.id3output.innerHTML = 'Could not generate id3 tags'
-	  console.log(error)
-	} else {
-	  console.log(tags)
-          this.id3output.innerHTML = JSON.stringify(tags, null, 2)
-        }
-      }
-    )
+    while((i = array.indexOf(value, i+1)) != -1) {
+      indexes.push(i)
+    }
+
+    return indexes
+  }
+
+  extractMetadata(data) {
+    let station, owner, title, artist, audioType, encoder, sampleRate, creationDate, startLoc, endLoc
+
+    // Get the title
+    startLoc = data.indexOf("TIT2") + 4
+    endLoc   = data.indexOf("TPE1")
+    title    = data.substring(startLoc, endLoc)
+
+    // Get the artist
+    startLoc = data.indexOf("TPE1") + 4
+    endLoc   = data.indexOf("TFLT")
+    artist   = data.substring(startLoc, endLoc)
+
+    // Get the station
+    startLoc = data.indexOf('TRSN') + 4
+    endLoc   = data.indexOf('TRSO')
+    station  = data.substring(startLoc, endLoc).replace('!', '')
+
+    // Get the station owner
+    startLoc = data.indexOf('TRSO') + 4
+    endLoc   = data.indexOf('TIT2')
+    owner    = data.substring(startLoc, endLoc)
+
+    // Get all User defined data fields
+    let userFields = this.getAllIndexes(data, 'TXXX')
+
+    // Get the audio object type
+    startLoc = data.indexOf('TFLT') + 4
+    endLoc   = data.indexOf('TXXX')
+    audioType = data.substring(startLoc, endLoc).replace(/\t/, '')
+
+    // Get the encoder
+    startLoc = userFields[1] + 4
+    endLoc   = userFields[2]
+    encoder  = data.substring(startLoc, endLoc).replace('enc', '').replace(3, '')
+
+    // Get the sample rate
+    startLoc = userFields[5] + 4
+    endLoc   = userFields[6]
+    sampleRate = data.substring(startLoc, endLoc).replace('asr', '')
+
+    // Get the creation date
+    startLoc = userFields[7] + 8
+    endLoc   = data.indexOf('UTC') + 3
+    creationDate = data.substring(startLoc, endLoc).replace('crd', '')
+
+    console.log(data)
+
+    this.id3 = {
+      title,
+      artist,
+      station,
+      owner,
+      audioType,
+      encoder,
+      sampleRate,
+      creationDate,
+      data
+    }
+  }
+
+  processID3(data) {
+    let samples = data.samples
+    let encodedTag
+    let parsedTag = []
+
+    encodedTag = samples[0].data
+    
+    encodedTag.forEach((element) => {
+      parsedTag.push(String.fromCharCode(element))
+    })
+   
+    console.log(parsedTag)
+
+    let tagAsString = parsedTag.toString().replace(/,/g, '')
+
+    this.extractMetadata(tagAsString)
   }
 
   init() {
+
     // Check if HLS is supported in the browser, or fail
     if (Hls.isSupported()) {
       let hls = new Hls()
@@ -159,6 +248,12 @@ class Main {
           this.player.volume = 0.5
         }
 
+        this.volumeMt.onclick = () => {
+	  this.volumeSlider.value = 0
+	  this.volumeVl.innerHTML = 0
+	  this.player.volume = 0
+	}
+
         this.volumeUp.onmouseup = () => {
           clearInterval(intervalId)
         }
@@ -169,29 +264,32 @@ class Main {
 
         // Fire when metadata changes
         hls.on(Hls.Events.FRAG_PARSING_METADATA, (event, data) => {
-          let meta = JSON.stringify(data, null, 2)
 
-          this.readId3Tags()
+          this.processID3(data)
+	
+          this.id3output.innerHTML = 
+		"ID3 TAGS\n=============\n\nTITLE: " + this.id3.title 
+		+ "\nARTIST: " + this.id3.artist 
+		+ "\nSTATION: " + this.id3.station 
+		+ "\nOWNER: " + this.id3.owner
+		+ "\nENCODER: " + this.id3.encoder 
+		+ "\nAUDIO TYPE: " + this.id3.audioType 
+		+ "\nSAMPLE RATE: " + this.id3.sampleRate 
+		+ "\nCREATION DATE: " + this.id3.creationDate 
+		+ "\nFULL ID3 STRING:\n\n" + this.id3.data
 
-          this.stats.innerHTML = "PLAYER METADATA\n===============\n\n" + meta
-          //console.log('metadata changed')
-          //console.log(data)
-        }) // hls.on Hls.Events.FRAG_PARSING_METADATA
+        })
 
         // Fire when userdata changes
         hls.on(Hls.Events.FRAG_PARSING_DATA, (event, data) => {
-          this.users.innerHTML = "USER DATA\n==================\n\n" + data.startPTS
-          //this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2)
+
+          //this.users.innerHTML = "USER DATA\n=================\n\n" + JSON.stringify(data, null, 2) 
           //console.log('data changed')
           //console.log(data)
-        })  // hls.on Hls.Events.FRAG_PARSING_DATA
+        })
 
-        hls.on(Hls.Events.STREAM_STATE_TRANSITION, (event, data) => {
-          let bufData = JSON.stringify(data, null, 2)
-          this.posi.innerHTML = "STREAM STATE\n==================\n\n" + bufData
-        }) // hls.on Hls.Events.STREAM_STATE_TRANSITION
-
-      })  // hls.on Hls.Events.MANIFEST_PARSED
+       
+      })
 
     } else {
       this.status.innerHTML = 'Sorry, HLS streaming is not supported in your browser.'
@@ -208,6 +306,7 @@ function changeStream(data) {
   strm.innerHTML = data._stream
   stat.innerHTML = 'STOPPED'
   __main__.init()
+
 }
 
 window.onload = (event) => {

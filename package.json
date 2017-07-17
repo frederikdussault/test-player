@@ -4,7 +4,7 @@
   "author": "Robert Fairley <robert.fairley@rci.rogers.com>",
   "dependencies": {
     "@types/hls.js": "^0.7.2",
-    "id3js": "^1.1.3",
+    "id3-parser": "^1.2.0",
     "rollup": "^0.43.0",
     "rollup-watch": "^4.0.0"
   },
